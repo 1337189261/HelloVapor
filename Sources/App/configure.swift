@@ -12,6 +12,8 @@ import Vapor
     -p 5432:5432 -d postgres
  */
 // configures your application
+
+var workingDirectory: String = ""
 public func configure(_ app: Application) throws {
     
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
@@ -28,9 +30,10 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateSong())
     app.migrations.add(CreateToken())
     
-    app.logger.logLevel = .debug
+//    app.logger.logLevel = .debug
     try app.autoMigrate().wait()
     app.views.use(.leaf)
+    workingDirectory = app.directory.workingDirectory
     
     try routes(app)
 }

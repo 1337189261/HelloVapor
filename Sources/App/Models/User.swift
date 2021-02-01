@@ -23,31 +23,37 @@ final class User: Model, Content {
     @Field(key: "email")
     var email: String
     
+    @Field(key: "avatar")
+    var avatar: String?
+    
     @Children(for: \.$author)
     var songs: [Song]
     
     init() {}
     
-    init(id: UUID? = nil, username: String, password: String, email: String) {
+    init(id: UUID? = nil, username: String, password: String, email: String, avatar: String? = nil) {
         self.username = username
         self.password = password
         self.email = email
+        self.avatar = avatar
     }
     
     final class Public: Content {
         var id: UUID?
         var username: String
+        var avatar: String?
         
-        init(id: UUID?, username: String) {
+        init(id: UUID?, username: String, avatar: String?) {
             self.id = id
             self.username = username
+            self.avatar = avatar
         }
     }
 }
 
 extension User {
     func convertToPublic() -> User.Public {
-        return User.Public(id: id, username: username)
+        return User.Public(id: id, username: username, avatar: avatar)
     }
 }
 

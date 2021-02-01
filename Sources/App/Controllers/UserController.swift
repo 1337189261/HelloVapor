@@ -19,18 +19,16 @@ struct UserController: RouteCollection {
         usersRoute.post("signup", use: createHandler(_:))
         
         usersRoute.get("search", use: searchHandler(_:))
-        usersRoute.get("first", use: getFirstHandler(_:))
-        usersRoute.get("sorted", use: sortedHandler(_:))
         
         let basicAuthMiddleware = User.authenticator()
         let basicAuthGroup = usersRoute.grouped(basicAuthMiddleware)
         basicAuthGroup.post("login", use: loginHandler)
 
-//        let tokenAuthMiddleware = Token.authenticator()
-//        let guardAuthMiddleware = User.guardMiddleware()
-//        let tokenAuthGroup = usersRoute.grouped(tokenAuthMiddleware, guardAuthMiddleware)
-//        tokenAuthGroup.post(use: createHandler)
-//        tokenAuthGroup.delete(":userid", use: deleteHandler(_:))
+        let tokenAuthMiddleware = Token.authenticator()
+        let guardAuthMiddleware = User.guardMiddleware()
+        let tokenAuthGroup = usersRoute.grouped(tokenAuthMiddleware, guardAuthMiddleware)
+        tokenAuthGroup.on(.POST, "updateAvatar", body: .collect(maxSize: "1mb"), use: updateAvatarHandler(_:))
+        tokenAuthGroup.delete(":userid", use: deleteHandler(_:))
     }
 
     func createHandler(_ req: Request) throws -> EventLoopFuture<Token> {
@@ -94,21 +92,21 @@ struct UserController: RouteCollection {
         return User.query(on: req.db).filter(\.$username == searchTerm)
             .all().convertToPublic()
     }
-
-    func getFirstHandler(_ req: Request) throws -> EventLoopFuture<User.Public> {
-        User.query(on: req.db).first().unwrap(or: Abort(.notFound)).convertToPublic()
-    }
-    func sortedHandler(_ req: Request) throws -> EventLoopFuture<[User.Public]> {
-        User.query(on: req.db)
-            .sort(\.$username, .ascending)
-            .all()
-            .convertToPublic()
-    }
     
     func loginHandler(_ req: Request) throws -> EventLoopFuture<Token> {
       let user = try req.auth.require(User.self)
       let token = try Token.generate(for: user)
       return token.save(on: req.db).map { token }
+    }
+    
+    func updateAvatarHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+        let user = try req.auth.require(User.self)
+        let imageData = try req.content.decode(ImageUploadData.self)
+        let name = try "\(user.requireID())-\(UUID().uuidString).jpeg"
+        let path = workingDirectory + "Images/" + name
+        FileManager().createFile(atPath: path, contents: imageData.picture, attributes: nil)
+        user.avatar = name
+        return user.save(on: req.db).transform(to: .noContent)
     }
     
     private func checkIfUserExists(_ username: String, req: Request) -> EventLoopFuture<Bool> {
@@ -117,5 +115,9 @@ struct UserController: RouteCollection {
         .first()
         .map { $0 != nil }
     }
+    
+}
 
+struct ImageUploadData: Content {
+    var picture: Data
 }
