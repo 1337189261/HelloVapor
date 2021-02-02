@@ -18,8 +18,20 @@ final class Song: Model, Content {
     @Parent(key: "user_id")
     var author: User
     
+    @Field(key: "author_url")
+    var authorUrl: String
+    
     @Field(key: "name")
     var name: String
+    
+    @Field(key: "desc")
+    var desc: String
+    
+    @Field(key: "lyric_url")
+    var lyricUrl: String?
+    
+    @Field(key: "album_name")
+    var albumName: String?
     
     @Field(key: "duration")
     var duration: String

@@ -33,8 +33,9 @@ struct UserController: RouteCollection {
 
     func createHandler(_ req: Request) throws -> EventLoopFuture<Token> {
         try User.validate(content: req)
-        let user = try req.content.decode(User.self)
-        user.password = try Bcrypt.hash(user.password)
+        let userData = try req.content.decode(CreateUserData.self)
+        let password = try Bcrypt.hash(userData.password)
+        let user = User(username: userData.username , password: password, email: userData.email, avatar: userData.avatar)
         var token: Token!
         return checkIfUserExists(user.username, req: req)
             .flatMap { $0 ? req.eventLoop.future(error: UserError.usernameTaken) : user.save(on: req.db)}
@@ -103,7 +104,7 @@ struct UserController: RouteCollection {
         let user = try req.auth.require(User.self)
         let imageData = try req.content.decode(ImageUploadData.self)
         let name = try "\(user.requireID())-\(UUID().uuidString).jpeg"
-        let path = workingDirectory + "Images/" + name
+        let path = workingDirectory + "Resources/Images/" + name
         FileManager().createFile(atPath: path, contents: imageData.picture, attributes: nil)
         user.avatar = name
         return user.save(on: req.db).transform(to: .noContent)
@@ -116,6 +117,13 @@ struct UserController: RouteCollection {
         .map { $0 != nil }
     }
     
+}
+
+struct CreateUserData: Content {
+    let username: String
+    let password: String
+    let email: String
+    let avatar: String?
 }
 
 struct ImageUploadData: Content {

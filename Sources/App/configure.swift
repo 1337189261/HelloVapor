@@ -29,7 +29,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateUser())
     app.migrations.add(CreateSong())
     app.migrations.add(CreateToken())
-    
+    app.databases.middleware.use(UserMiddleware())
 //    app.logger.logLevel = .debug
     try app.autoMigrate().wait()
     app.views.use(.leaf)

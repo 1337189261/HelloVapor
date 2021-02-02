@@ -24,10 +24,13 @@ final class User: Model, Content {
     var email: String
     
     @Field(key: "avatar")
-    var avatar: String?
+    var avatar: String
     
     @Children(for: \.$author)
     var songs: [Song]
+    
+    @Field(key: "schema")
+    var schema: String
     
     init() {}
     
@@ -35,15 +38,15 @@ final class User: Model, Content {
         self.username = username
         self.password = password
         self.email = email
-        self.avatar = avatar
+        self.avatar = avatar ?? ""
     }
     
     final class Public: Content {
         var id: UUID?
         var username: String
-        var avatar: String?
+        var avatar: String
         
-        init(id: UUID?, username: String, avatar: String?) {
+        init(id: UUID?, username: String, avatar: String) {
             self.id = id
             self.username = username
             self.avatar = avatar
@@ -100,5 +103,12 @@ extension User: Validatable {
         validations.add("username", as: String.self, is: !.empty)
         validations.add("password", as: String.self, is: .count(6...))
         validations.add("email", as: String.self, is: .email)
+    }
+}
+
+struct UserMiddleware: ModelMiddleware {
+    func create(model: User, on db: Database, next: AnyModelResponder) -> EventLoopFuture<Void> {
+        model.schema = "mcm://user/" + model.username
+        return next.create(model, on: db)
     }
 }
