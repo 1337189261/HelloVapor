@@ -50,6 +50,5 @@ struct FileController: RouteCollection {
         var headers = HTTPHeaders()
         headers.add(name: .contentType, value: "text/plain")
         return Response(headers: headers, body: .init(data: data))
-        fatalError()
     }
 }

@@ -37,11 +37,11 @@ struct SongController: RouteCollection {
             .unwrap(or: Abort(.notFound))
     }
     
-    func getAuthorHandler(_ req: Request) throws -> EventLoopFuture<User> {
+    func getAuthorHandler(_ req: Request) throws -> EventLoopFuture<User.Public> {
         Song.find(req.parameters.get("songid"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { (song) in
-                song.$author.get(on: req.db)
+                song.$author.get(on: req.db).convertToPublic()
             }
     }
     

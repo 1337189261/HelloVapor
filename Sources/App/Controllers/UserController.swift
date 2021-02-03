@@ -12,12 +12,10 @@ import Fluent
 struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let usersRoute = routes.grouped("api","users")
-        usersRoute.get("all", use: getAllHandler(_:))
         usersRoute.get(":userid", use: getHandler(_:))
         usersRoute.get(":userid", "songs", use: getSongsHandler(_:))
         usersRoute.put(":userid", use: updateHandler(_:))
         usersRoute.post("signup", use: createHandler(_:))
-        
         usersRoute.get("search", use: searchHandler(_:))
         
         let basicAuthMiddleware = User.authenticator()
@@ -28,14 +26,15 @@ struct UserController: RouteCollection {
         let guardAuthMiddleware = User.guardMiddleware()
         let tokenAuthGroup = usersRoute.grouped(tokenAuthMiddleware, guardAuthMiddleware)
         tokenAuthGroup.on(.POST, "updateAvatar", body: .collect(maxSize: "1mb"), use: updateAvatarHandler(_:))
+        tokenAuthGroup.get("follow", ":followeeid", use: followHandler(_:))
         tokenAuthGroup.delete(":userid", use: deleteHandler(_:))
     }
 
     func createHandler(_ req: Request) throws -> EventLoopFuture<Token> {
         try User.validate(content: req)
         let userData = try req.content.decode(CreateUserData.self)
-        let password = try Bcrypt.hash(userData.password)
-        let user = User(username: userData.username , password: password, email: userData.email, avatar: userData.avatar)
+        let hashedPassword = try Bcrypt.hash(userData.password)
+        let user = User(username: userData.username , hashedPassword: hashedPassword, email: userData.email, avatar: userData.avatar)
         var token: Token!
         return checkIfUserExists(user.username, req: req)
             .flatMap { $0 ? req.eventLoop.future(error: UserError.usernameTaken) : user.save(on: req.db)}
@@ -59,12 +58,8 @@ struct UserController: RouteCollection {
         User.find(req.parameters.get("userid"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { (user) in
-                user.$songs.get(on: req.db)
+                user.$createdSongs.get(on: req.db)
             }
-    }
-
-    func getAllHandler(_ req: Request) throws -> EventLoopFuture<[User.Public]> {
-        User.query(on: req.db).all().convertToPublic()
     }
 
     func updateHandler(_ req: Request) throws -> EventLoopFuture<User.Public> {
@@ -100,13 +95,38 @@ struct UserController: RouteCollection {
       return token.save(on: req.db).map { token }
     }
     
+    func followHandler(_ req: Request) throws -> EventLoopFuture<HTTPResponseStatus> {
+        let follower = try req.auth.require(User.self)
+        let followeeFuture = User.find(req.parameters.get("followeeid"), on: req.db).unwrap(or: Abort(.notFound))
+        return followeeFuture.flatMap { (followee) -> EventLoopFuture<(Bool, User)> in
+            FollowRelation.query(on: req.db)
+                .filter(\.$fromUser.$id == follower.id!)
+                .filter(\.$toUser.$id == followee.id!)
+                .first()
+                .map { ($0 != nil, followee) }
+        }
+        .flatMap { (exist, followee) -> EventLoopFuture<HTTPResponseStatus> in
+            guard !exist else {
+                return req.eventLoop.future(.badRequest)
+            }
+            follower.profile.followCount += 1
+            let followerUpdate = follower.save(on: req.db).map { follower }
+            let followeeUpdate = followeeFuture.flatMap { user -> EventLoopFuture<User> in
+                user.profile.followerCount += 1
+                return user.save(on: req.db).map { user}
+            }
+            let relationUpdate = followee.$followers.attach(follower, method: .always, on: req.db)
+            return followerUpdate.and(followeeUpdate).and(relationUpdate).transform(to: .created)
+        }
+    }
+    
     func updateAvatarHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
         let user = try req.auth.require(User.self)
         let imageData = try req.content.decode(ImageUploadData.self)
         let name = try "\(user.requireID())-\(UUID().uuidString).jpeg"
         let path = workingDirectory + "Resources/Images/" + name
         FileManager().createFile(atPath: path, contents: imageData.picture, attributes: nil)
-        user.avatar = name
+        user.profile.avatarUrl = ""
         return user.save(on: req.db).transform(to: .noContent)
     }
     

@@ -18,27 +18,40 @@ final class User: Model, Content {
     var username: String
     
     @Field(key: "password")
-    var password: String
+    var hashedPassword: String
     
     @Field(key: "email")
     var email: String
     
-    @Field(key: "avatar")
-    var avatar: String
+    @Group(key: "profile")
+    var profile: UserProfile
     
+    // Query Property
     @Children(for: \.$author)
-    var songs: [Song]
+    var createdSongs: [Song]
     
-    @Field(key: "schema")
-    var schema: String
+    @Timestamp(key: "created_at", on: .create)
+    var createdAt: Date?
     
-    init() {}
+    @Siblings(through: FollowRelation.self
+              , from: \.$toUser, to: \.$fromUser)
+    var followers: [User]
     
-    init(id: UUID? = nil, username: String, password: String, email: String, avatar: String? = nil) {
+    @Siblings(through: FollowRelation.self, from: \.$fromUser, to: \.$toUser)
+    var followees: [User]
+    
+    init() { }
+    
+    init(id: UUID? = nil, username: String, hashedPassword: String, email: String, avatar: String? = nil) {
         self.username = username
-        self.password = password
+        self.hashedPassword = hashedPassword
         self.email = email
-        self.avatar = avatar ?? ""
+        let profile = UserProfile()
+        profile.avatarUrl = ""
+        profile.backgroundAvatarUrl = ""
+        profile.schema = ""
+        profile.nickname = username
+        self.profile = profile
     }
     
     final class Public: Content {
@@ -56,7 +69,7 @@ final class User: Model, Content {
 
 extension User {
     func convertToPublic() -> User.Public {
-        return User.Public(id: id, username: username, avatar: avatar)
+        return User.Public(id: id, username: username, avatar: "")
     }
 }
 
@@ -88,10 +101,10 @@ extension EventLoopFuture where Value == Array<User> {
 
 extension User: ModelAuthenticatable {
     static let usernameKey = \User.$username
-    static let passwordHashKey = \User.$password
+    static let passwordHashKey = \User.$hashedPassword
     
     func verify(password: String) throws -> Bool {
-        try Bcrypt.verify(password, created: self.password)
+        try Bcrypt.verify(password, created: self.hashedPassword)
     }
 }
 
@@ -108,7 +121,7 @@ extension User: Validatable {
 
 struct UserMiddleware: ModelMiddleware {
     func create(model: User, on db: Database, next: AnyModelResponder) -> EventLoopFuture<Void> {
-        model.schema = "mcm://user/" + model.username
+//        model.schema = "mcm://user/" + model.username
         return next.create(model, on: db)
     }
 }
