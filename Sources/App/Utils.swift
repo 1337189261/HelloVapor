@@ -7,12 +7,24 @@
 
 import Foundation
 
+var isLinux: Bool {
+    #if os(Linux)
+        return true
+    #else
+        return false
+    #endif
+}
+
+let baseUrl: String = {
+    isLinux ? "http://193.123.246.233:80/" : "http://localhost:8080/"
+}()
+
 extension String {
     var songUrl: String {
-        "http://localhost:8080/api/songs/file/" + self + (hasSuffix("mp3") ? "" : ".mp3")
+         baseUrl + "api/songs/file/" + self + (hasSuffix("mp3") ? "" : ".mp3")
     }
     
     var imgUrl: String {
-        "http://localhost:8080/api/images/" + self
+        baseUrl + "api/images/" + self
     }
 }
