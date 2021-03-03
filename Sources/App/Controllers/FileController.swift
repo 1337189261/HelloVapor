@@ -21,6 +21,7 @@ struct FileController: RouteCollection {
             return Response(status: .notFound);
         }
         let filePath = workingDirectory + "Resources/Images/" + imageName
+        req.logger.info(Logger.Message(stringLiteral: filePath))
         let fileURL = URL(fileURLWithPath: filePath)
         let data = try Data(contentsOf: fileURL)
         var headers = HTTPHeaders()
@@ -33,6 +34,7 @@ struct FileController: RouteCollection {
             return Response(status: .notFound);
         }
         let filePath = workingDirectory + "Resources/Songs/" + songName
+        req.logger.info(Logger.Message(stringLiteral: filePath))
         let fileURL = URL(fileURLWithPath: filePath)
         let data = try Data(contentsOf: fileURL)
         var headers = HTTPHeaders()
@@ -45,6 +47,7 @@ struct FileController: RouteCollection {
             return Response(status: .notFound);
         }
         let filePath = workingDirectory + "Resources/Lyrics/" + lyricName
+        req.logger.info(Logger.Message(stringLiteral: filePath))
         let fileURL = URL(fileURLWithPath: filePath)
         let data = try Data(contentsOf: fileURL)
         var headers = HTTPHeaders()

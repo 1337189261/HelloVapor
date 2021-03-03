@@ -61,6 +61,7 @@ public func configure(_ app: Application) throws {
     try app.autoMigrate().wait()
     app.views.use(.leaf)
     workingDirectory = app.directory.workingDirectory
+    app.logger.info(.init(stringLiteral: workingDirectory))
     try createMockData(db: app.db)
     try routes(app)
 }
