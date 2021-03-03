@@ -13,7 +13,6 @@ struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let usersRoute = routes.grouped("api","users")
         usersRoute.get(":userid", use: getHandler(_:))
-        usersRoute.get(":userid", "songs", use: getSongsHandler(_:))
         usersRoute.put(":userid", use: updateHandler(_:))
         usersRoute.post("signup", use: createHandler(_:))
         usersRoute.get("search", use: searchHandler(_:))
@@ -54,14 +53,6 @@ struct UserController: RouteCollection {
             .convertToPublic()
     }
 
-    func getSongsHandler(_ req:Request) throws -> EventLoopFuture<[Song]> {
-        User.find(req.parameters.get("userid"), on: req.db)
-            .unwrap(or: Abort(.notFound))
-            .flatMap { (user) in
-                user.$createdSongs.get(on: req.db)
-            }
-    }
-
     func updateHandler(_ req: Request) throws -> EventLoopFuture<User.Public> {
         let updateUser = try req.content.decode(User.self)
         return User.find(req.parameters.get("userid"), on: req.db)
@@ -90,16 +81,21 @@ struct UserController: RouteCollection {
     }
     
     func loginHandler(_ req: Request) throws -> EventLoopFuture<Token> {
-      let user = try req.auth.require(User.self)
-      let token = try Token.generate(for: user)
-      return token.save(on: req.db).map { token }
+        let user: User
+        do {
+            user = try req.auth.require(User.self)
+        } catch {
+            throw UserError.wrongUsernameOrPassword
+        }
+        let token = try Token.generate(for: user)
+        return token.save(on: req.db).map { token }
     }
     
     func followHandler(_ req: Request) throws -> EventLoopFuture<HTTPResponseStatus> {
         let follower = try req.auth.require(User.self)
         let followeeFuture = User.find(req.parameters.get("followeeid"), on: req.db).unwrap(or: Abort(.notFound))
         return followeeFuture.flatMap { (followee) -> EventLoopFuture<(Bool, User)> in
-            FollowRelation.query(on: req.db)
+            UserFollowRelation.query(on: req.db)
                 .filter(\.$fromUser.$id == follower.id!)
                 .filter(\.$toUser.$id == followee.id!)
                 .first()

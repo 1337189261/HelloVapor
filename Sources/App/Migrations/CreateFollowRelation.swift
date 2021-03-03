@@ -9,7 +9,7 @@ import Fluent
 
 struct CreateFollowRelation: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.schema(FollowRelation.schema)
+        database.schema(UserFollowRelation.schema)
             .id()
             .field("from_user_id", .uuid, .required)
             .field("to_user_id", .uuid, .required)
@@ -17,6 +17,6 @@ struct CreateFollowRelation: Migration {
     }
     
     func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema(FollowRelation.schema).delete()
+        database.schema(UserFollowRelation.schema).delete()
     }
 }

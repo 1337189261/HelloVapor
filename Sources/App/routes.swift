@@ -5,4 +5,5 @@ func routes(_ app: Application) throws {
     try app.register(collection: UserController())
     try app.register(collection: SongController())
     try app.register(collection: FileController())
+    try app.register(collection: PlaylistController())
 }

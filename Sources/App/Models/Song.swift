@@ -15,33 +15,31 @@ final class Song: Model, Content {
     @ID
     var id: UUID?
     
-    @Parent(key: "user_id")
-    var author: User
+    @Parent(key: "artist_id")
+    var artist: Artist
     
-    @Field(key: "author_url")
-    var authorUrl: String
+    @Field(key: "song_url")
+    var songUrl: String
     
     @Field(key: "name")
     var name: String
     
-    @Field(key: "desc")
-    var desc: String
-    
     @Field(key: "lyric_url")
     var lyricUrl: String?
     
-    @Field(key: "album_name")
-    var albumName: String?
+    @Siblings(through: PlaylistSongRelation.self, from: \.$song, to: \.$playlist)
+    var playlists: [Playlist]
     
-    @Field(key: "duration")
-    var duration: String
+    @Timestamp(key: "created_at", on: .create)
+    var createdAt: Date?
     
     init() { }
     
-    init(id: UUID? = nil, authorId: User.IDValue, name: String, duration: String) {
+    init(id: UUID? = nil, authorId: User.IDValue, songUrl: String, name: String, lyricUrl: String? = nil) {
         self.id = id
-        self.$author.id = authorId
+        self.$artist.id = authorId
+        self.songUrl = songUrl
         self.name = name
-        self.duration = duration
+        self.lyricUrl = lyricUrl
     }
 }

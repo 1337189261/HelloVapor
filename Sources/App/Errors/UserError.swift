@@ -10,6 +10,7 @@ import Vapor
 
 enum UserError {
   case usernameTaken
+  case wrongUsernameOrPassword
 }
 
 extension UserError: AbortError {
@@ -20,12 +21,14 @@ extension UserError: AbortError {
   var status: HTTPResponseStatus {
     switch self {
     case .usernameTaken: return .conflict
+    case .wrongUsernameOrPassword: return .unauthorized
     }
   }
 
   var reason: String {
     switch self {
-    case .usernameTaken: return "Username already taken"
+    case .usernameTaken: return "该用户名已被注册"
+    case .wrongUsernameOrPassword: return "用户名或者密码错误"
     }
   }
 }

@@ -9,15 +9,17 @@ import Fluent
 
 struct CreateSong: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("songs")
+        database.schema(Song.schema)
             .id()
-            .field("user_id", .uuid, .required, .references("users", "id"))
+            .field("artist_id", .uuid, .required, .references("artists", "id"))
+            .field("song_url", .string, .required)
             .field("name", .string, .required)
-            .field("duration", .string, .required)
+            .field("lyric_url", .string)
+            .field("created_at", .date)
             .create()
     }
     
     func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("songs").delete()
+        database.schema(Song.schema).delete()
     }
 }

@@ -8,7 +8,8 @@
 import Fluent
 import Vapor
 
-final class User: Model, Content {
+final class User: Model, PublicTransformable {
+    
     static let schema = "users"
     
     @ID
@@ -26,19 +27,18 @@ final class User: Model, Content {
     @Group(key: "profile")
     var profile: UserProfile
     
-    // Query Property
-    @Children(for: \.$author)
-    var createdSongs: [Song]
-    
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
     
-    @Siblings(through: FollowRelation.self
+    @Siblings(through: UserFollowRelation.self
               , from: \.$toUser, to: \.$fromUser)
     var followers: [User]
     
-    @Siblings(through: FollowRelation.self, from: \.$fromUser, to: \.$toUser)
+    @Siblings(through: UserFollowRelation.self, from: \.$fromUser, to: \.$toUser)
     var followees: [User]
+    
+    @Siblings(through: PlaylistFollowRelation.self, from: \.$user, to: \.$playlist)
+    var followedPlaylist: [Playlist]
     
     init() { }
     
@@ -47,7 +47,7 @@ final class User: Model, Content {
         self.hashedPassword = hashedPassword
         self.email = email
         let profile = UserProfile()
-        profile.avatarUrl = ""
+        profile.avatarUrl = avatar ?? ""
         profile.backgroundAvatarUrl = ""
         profile.schema = ""
         profile.nickname = username
@@ -56,46 +56,35 @@ final class User: Model, Content {
     
     final class Public: Content {
         var id: UUID?
-        var username: String
-        var avatar: String
+        var username: String?
+        var avatarUrl: String?
+        var backgroundAvatarUrl:String?
+        var schema: String?
+        var nickname: String?
+        var followCount: Int?
+        var followerCount: Int?
         
         init(id: UUID?, username: String, avatar: String) {
             self.id = id
             self.username = username
-            self.avatar = avatar
+            self.avatarUrl = avatar
+        }
+        
+        init(_ user: User) {
+            self.id = user.id
+            self.avatarUrl = user.profile.avatarUrl
+            self.backgroundAvatarUrl = user.profile.backgroundAvatarUrl
+            self.schema = user.profile.schema
+            self.nickname = user.profile.nickname
+            self.followCount = user.profile.followCount
+            self.followerCount = user.profile.followerCount
         }
     }
 }
 
 extension User {
     func convertToPublic() -> User.Public {
-        return User.Public(id: id, username: username, avatar: "")
-    }
-}
-
-extension EventLoopFuture where Value: User {
-    func convertToPublic() -> EventLoopFuture<User.Public> {
-        return self.map { user in
-            return user.convertToPublic()
-        }
-    }
-}
-
-extension EventLoopFuture where Value: Collection, Value.Element == User {
-    func convertToPublic() -> EventLoopFuture<[User.Public]> {
-        map { $0.map { $0.convertToPublic() }}
-    }
-}
-
-extension Collection where Element: User {
-    func convertToPublic() -> [User.Public] {
-        return self.map { $0.convertToPublic() }
-    }
-}
-
-extension EventLoopFuture where Value == Array<User> {
-    func convertToPublic() -> EventLoopFuture<[User.Public]> {
-        return self.map { $0.convertToPublic() }
+        Public(self)
     }
 }
 
@@ -121,7 +110,6 @@ extension User: Validatable {
 
 struct UserMiddleware: ModelMiddleware {
     func create(model: User, on db: Database, next: AnyModelResponder) -> EventLoopFuture<Void> {
-//        model.schema = "mcm://user/" + model.username
         return next.create(model, on: db)
     }
 }

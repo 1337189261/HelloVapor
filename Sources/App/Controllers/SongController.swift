@@ -28,7 +28,7 @@ struct SongController: RouteCollection {
     
     func createHandler(_ req: Request) throws -> EventLoopFuture<Song> {
         let songData = try req.content.decode(CreateSongData.self)
-        let song = Song(authorId: songData.authorId, name: songData.name, duration: songData.duration)
+        let song = Song(authorId: songData.authorId, songUrl: songData.songUrl, name: songData.name)
         return song.save(on: req.db).map { song }
     }
     
@@ -37,11 +37,11 @@ struct SongController: RouteCollection {
             .unwrap(or: Abort(.notFound))
     }
     
-    func getAuthorHandler(_ req: Request) throws -> EventLoopFuture<User.Public> {
+    func getAuthorHandler(_ req: Request) throws -> EventLoopFuture<Artist> {
         Song.find(req.parameters.get("songid"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { (song) in
-                song.$author.get(on: req.db).convertToPublic()
+                song.$artist.get(on: req.db)
             }
     }
     
@@ -55,8 +55,7 @@ struct SongController: RouteCollection {
             .unwrap(or: Abort(.notFound))
             .flatMap { (song) in
                 song.name = updateSongData.name
-                song.$author.id = updateSongData.authorId
-                song.duration = updateSongData.duration
+                song.$artist.id = updateSongData.authorId
                 return song.save(on: req.db).map { song }
             }
     }
@@ -94,6 +93,7 @@ struct SongController: RouteCollection {
 struct CreateSongData: Content {
     let authorId: UUID
     let name: String
-    let duration: String
+    let lyricUrl: String?
+    let songUrl: String
 }
 
