@@ -7,7 +7,6 @@
 
 import Vapor
 import Fluent
-import SwiftUI
 
 struct FileController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
