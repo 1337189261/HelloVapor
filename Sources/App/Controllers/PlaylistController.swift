@@ -14,10 +14,10 @@ struct PlaylistController: RouteCollection {
         playlistsRoute.get("sample", use: getSampleHandler(_:))
     }
     
-    func getTopHandler(_ req: Request) throws -> EventLoopFuture<[Playlist]> {
+    func getTopHandler(_ req: Request) throws -> EventLoopFuture<[Playlist.Public]> {
         Playlist.query(on: req.db).with(\.$songs){ song in
             song.with(\.$artist)
-        }.range(..<10).all()
+        }.range(..<10).all().convertToPublic()
     }
     
     func getSampleHandler(_ req: Request) throws -> EventLoopFuture<Playlist.Public> {

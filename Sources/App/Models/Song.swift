@@ -48,7 +48,6 @@ final class Song: Model, PublicTransformable {
         self.name = name
         self.lyricUrl = lyricUrl
         self.duration = duration
-        print(self.duration)
     }
     
     struct Public: Content {

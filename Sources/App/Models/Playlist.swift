@@ -8,7 +8,7 @@
 import Vapor
 import Fluent
 
-final class Playlist: Model, Content, PublicTransformable {
+final class Playlist: Model, PublicTransformable {
     static let schema: String = "playlists"
     
     @ID
@@ -56,7 +56,7 @@ final class Playlist: Model, Content, PublicTransformable {
         var id: UUID?
         var name: String?
         var avatarUrl: String?
-        var songs: [Song]?
+        var songs: [Song.Public]?
         var followerCount: Int?
         var creator: User.Public?
         
@@ -64,7 +64,7 @@ final class Playlist: Model, Content, PublicTransformable {
             self.id = playlist.id
             self.name = playlist.name
             self.avatarUrl = playlist.avatarUrl
-            self.songs = playlist.songs
+            self.songs = playlist.songs.convertToPublic()
             self.followerCount = playlist.followerCount
             self.creator = playlist.creator.convertToPublic()
         }
