@@ -7,8 +7,9 @@
 
 import Fluent
 import Vapor
+import ID3TagEditor
 
-final class Song: Model, Content {
+final class Song: Model, PublicTransformable {
     
     static let schema = "songs"
     
@@ -18,11 +19,14 @@ final class Song: Model, Content {
     @Parent(key: "artist_id")
     var artist: Artist
     
-    @Field(key: "song_url")
-    var songUrl: String
+    @Field(key: "filename")
+    var filename: String
     
     @Field(key: "name")
     var name: String
+    
+    @Field(key: "duration")
+    var duration: Int
     
     @Field(key: "lyric_url")
     var lyricUrl: String?
@@ -35,11 +39,39 @@ final class Song: Model, Content {
     
     init() { }
     
-    init(id: UUID? = nil, authorId: User.IDValue, songUrl: String, name: String, lyricUrl: String? = nil) {
+    static let id3TagEditor = ID3TagEditor()
+    
+    init(id: UUID? = nil, authorId: User.IDValue, filename: String, name: String, duration: Int, lyricUrl: String? = nil) {
         self.id = id
         self.$artist.id = authorId
-        self.songUrl = songUrl
+        self.filename = filename
         self.name = name
         self.lyricUrl = lyricUrl
+        self.duration = duration
+        print(self.duration)
+    }
+    
+    struct Public: Content {
+        var id: UUID?
+        var artist: Artist?
+        var songUrl: String
+        var name: String
+        var duration: Int
+        var lyricUrl: String?
+        
+        init(_ song: Song) {
+            self.id = song.id
+            if let artist = song.$artist.value {
+                self.artist = artist
+            }
+            self.songUrl = song.filename.songUrl
+            self.name = song.name
+            self.duration = song.duration
+            self.lyricUrl = song.lyricUrl
+        }
+    }
+    
+    func convertToPublic() -> Public {
+        Public(self)
     }
 }

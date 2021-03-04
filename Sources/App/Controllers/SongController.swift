@@ -15,26 +15,21 @@ struct SongController: RouteCollection {
         songsRoute.get(":songid", use: getHandler(_:))
         songsRoute.get(":songid", "author", use: getAuthorHandler(_:))
         songsRoute.get("search", use: searchHandler(_:))
-        songsRoute.get("first", use: getFirstHandler(_:))
-        songsRoute.get("sorted", use: sortedHandler(_:))
         
         let tokenAuthMiddleware = Token.authenticator()
         let guardAuthMiddleware = User.guardMiddleware()
         let tokenAuthGroup = songsRoute.grouped(tokenAuthMiddleware, guardAuthMiddleware)
-        tokenAuthGroup.post(use: createHandler)
         tokenAuthGroup.delete(":songid", use: deleteHandler)
-        tokenAuthGroup.put(":songid", use: updateHandler)
     }
     
-    func createHandler(_ req: Request) throws -> EventLoopFuture<Song> {
-        let songData = try req.content.decode(CreateSongData.self)
-        let song = Song(authorId: songData.authorId, songUrl: songData.songUrl, name: songData.name)
-        return song.save(on: req.db).map { song }
-    }
-    
-    func getHandler(_ req: Request) throws -> EventLoopFuture<Song> {
+    func getHandler(_ req: Request) throws -> EventLoopFuture<Song.Public> {
         Song.find(req.parameters.get("songid"), on: req.db)
+            .map({ (song) -> Song? in
+                try? song?.$artist.load(on: req.db).wait()
+                return song
+            })
             .unwrap(or: Abort(.notFound))
+            .convertToPublic()
     }
     
     func getAuthorHandler(_ req: Request) throws -> EventLoopFuture<Artist> {
@@ -45,19 +40,8 @@ struct SongController: RouteCollection {
             }
     }
     
-    func getAllHandler(_ req: Request) throws -> EventLoopFuture<[Song]> {
-        Song.query(on: req.db).all()
-    }
-    
-    func updateHandler(_ req: Request) throws -> EventLoopFuture<Song> {
-        let updateSongData = try req.content.decode(CreateSongData.self)
-        return Song.find(req.parameters.get("songid"), on: req.db)
-            .unwrap(or: Abort(.notFound))
-            .flatMap { (song) in
-                song.name = updateSongData.name
-                song.$artist.id = updateSongData.authorId
-                return song.save(on: req.db).map { song }
-            }
+    func getAllHandler(_ req: Request) throws -> EventLoopFuture<[Song.Public]> {
+        Song.query(on: req.db).with(\.$artist).all().convertToPublic()
     }
     
     func deleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
@@ -69,31 +53,14 @@ struct SongController: RouteCollection {
             }
     }
     
-    func searchHandler(_ req: Request) throws -> EventLoopFuture<[Song]> {
+    func searchHandler(_ req: Request) throws -> EventLoopFuture<[Song.Public]> {
             guard let searchTerm = req.query[String.self, at: "term"] else {
                 throw Abort(.badRequest)
             }
             
             return Song.query(on: req.db).filter(\.$name == searchTerm)
                 .all()
-    }
-    
-    func getFirstHandler(_ req: Request) throws -> EventLoopFuture<Song> {
-        Song.query(on: req.db).first().unwrap(or: Abort(.notFound))
-    }
-    func sortedHandler(_ req: Request) throws -> EventLoopFuture<[Song]> {
-        Song.query(on: req.db)
-            .sort(\.$name, .ascending)
-            .all()
+                .convertToPublic()
     }
     
 }
-
-
-struct CreateSongData: Content {
-    let authorId: UUID
-    let name: String
-    let lyricUrl: String?
-    let songUrl: String
-}
-

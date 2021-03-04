@@ -7,6 +7,7 @@
 
 import Vapor
 import Fluent
+import SwiftUI
 
 struct FileController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
@@ -56,9 +57,6 @@ struct FileController: RouteCollection {
     }
 }
 
-
-//func getImage(named name: String) throws -> Data {
-//    let filePath = workingDirectory + "Resources/Images/" + name
-//    let fileURL = URL(fileURLWithPath: filePath)
-//    return try Data(contentsOf: fileURL)
+//func audioPath(for fileName: String) -> String {
+//    workingDirectory + "Resources/Songs/" + (fileName.hasSuffix("mp3") ? fileName : (fileName + ".mp3"))
 //}
