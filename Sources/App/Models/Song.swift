@@ -50,6 +50,10 @@ final class Song: Model, PublicTransformable {
         self.duration = duration
     }
     
+    static func query(with req: Request)-> QueryBuilder<Song> {
+        Song.query(on: req.db).with(\.$artist)
+    }
+    
     struct Public: Content {
         var id: UUID?
         var artist: Artist?
@@ -57,6 +61,7 @@ final class Song: Model, PublicTransformable {
         var name: String
         var duration: Int
         var lyricUrl: String?
+        var imgUrl: String
         
         init(_ song: Song) {
             self.id = song.id
@@ -67,6 +72,12 @@ final class Song: Model, PublicTransformable {
             self.name = song.name
             self.duration = song.duration
             self.lyricUrl = song.lyricUrl
+            let index = song.filename.firstIndex(of: ".")
+            if let index = index {
+                self.imgUrl = String(song.filename.prefix(upTo: index) + ".jpg").imgUrl
+            } else {
+                self.imgUrl = (song.filename + ".jpg").imgUrl
+            }
         }
     }
     

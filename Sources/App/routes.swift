@@ -6,4 +6,5 @@ func routes(_ app: Application) throws {
     try app.register(collection: SongController())
     try app.register(collection: FileController())
     try app.register(collection: PlaylistController())
+    try app.register(collection: HomeController())
 }

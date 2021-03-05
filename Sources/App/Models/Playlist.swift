@@ -52,6 +52,13 @@ final class Playlist: Model, PublicTransformable {
             }).wait()
     }
     
+    static func query(with req: Request)-> QueryBuilder<Playlist> {
+        Playlist.query(on: req.db).with(\.$songs){ song in
+            song.with(\.$artist)
+        }
+        .with(\.$creator)
+    }
+    
     struct Public: Content {
         var id: UUID?
         var name: String?

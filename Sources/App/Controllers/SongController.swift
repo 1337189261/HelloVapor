@@ -5,8 +5,8 @@
 //  Created by chenhaoyu.1999 on 2021/1/29.
 //
 
-import Fluent
 import Vapor
+import Fluent
 
 struct SongController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {

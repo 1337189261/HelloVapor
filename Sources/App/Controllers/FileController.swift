@@ -6,7 +6,6 @@
 //
 
 import Vapor
-import Fluent
 
 struct FileController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
