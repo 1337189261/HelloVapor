@@ -29,7 +29,7 @@ final class Song: Model, PublicTransformable {
     var duration: Int
     
     @Field(key: "lyric_name")
-    var lyric_name: String?
+    var lyricName: String?
     
     @Siblings(through: PlaylistSongRelation.self, from: \.$song, to: \.$playlist)
     var playlists: [Playlist]
@@ -46,7 +46,7 @@ final class Song: Model, PublicTransformable {
         self.$artist.id = authorId
         self.filename = filename
         self.name = name
-        self.lyric_name = lyricName
+        self.lyricName = lyricName
         self.duration = duration
     }
     
@@ -71,7 +71,7 @@ final class Song: Model, PublicTransformable {
             self.songUrl = song.filename.songUrl
             self.name = song.name
             self.duration = song.duration
-            self.lyricName = song.lyric_name
+            self.lyricName = song.lyricName
             let index = song.filename.firstIndex(of: ".")
             if let index = index {
                 self.imgUrl = String(song.filename.prefix(upTo: index) + ".jpg").imgUrl

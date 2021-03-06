@@ -84,7 +84,7 @@ func createMockData(db: Database) throws {
         return artist
     }
     let songs = [
-        Song(authorId: artists[0].id!, filename: "chengdu", name: "成都", duration: 328, lyricName: "chengdu"),
+        Song(authorId: artists[0].id!, filename: "chengdu", name: "成都", duration: 328, lyricName: "chengdu.lrc"),
         Song(authorId: artists[1].id!, filename: "xiangwozheyangderen", name: "像我这样的人", duration: 208),
         Song(authorId: artists[2].id!, filename: "guanjianci", name: "关键词", duration: 212)
     ]
