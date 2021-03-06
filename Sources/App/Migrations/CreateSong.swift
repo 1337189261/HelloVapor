@@ -15,7 +15,7 @@ struct CreateSong: Migration {
             .field("filename", .string, .required)
             .field("name", .string, .required)
             .field("duration", .int, .required)
-            .field("lyric_url", .string)
+            .field("lyric_name", .string)
             .field("created_at", .date)
             .create()
     }

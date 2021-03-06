@@ -28,30 +28,24 @@ struct FileController: RouteCollection {
         return Response(headers: headers, body: .init(data: data))
     }
     
-    func getSongHandler(_ req: Request) throws -> Response {
-        guard let songName = req.parameters.get("songName") else {
-            return Response(status: .notFound);
-        }
+    func getSongHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+        let songName = req.parameters.get("songName") ?? ""
         let filePath = workingDirectory + "Resources/Songs/" + songName
         req.logger.info(Logger.Message(stringLiteral: filePath))
-        let fileURL = URL(fileURLWithPath: filePath)
-        let data = try Data(contentsOf: fileURL)
-        var headers = HTTPHeaders()
-        headers.add(name: .contentType, value: "audio/mpeg")
-        return Response(headers: headers, body: .init(data: data))
+        let response = req.fileio.streamFile(at: filePath)
+        return req.eventLoop.makeSucceededFuture(response)
     }
     
-    func getLyricHandler(_ req: Request) throws -> Response {
+    func getLyricHandler(_ req: Request) throws -> EventLoopFuture<String> {
         guard let lyricName = req.parameters.get("lyricName") else {
-            return Response(status: .notFound);
+            return req.eventLoop.future(error: Abort(.notFound));
         }
         let filePath = workingDirectory + "Resources/Lyrics/" + lyricName
         req.logger.info(Logger.Message(stringLiteral: filePath))
         let fileURL = URL(fileURLWithPath: filePath)
         let data = try Data(contentsOf: fileURL)
-        var headers = HTTPHeaders()
-        headers.add(name: .contentType, value: "text/plain")
-        return Response(headers: headers, body: .init(data: data))
+        let lyric = String(data: data, encoding: .utf8) ?? ""
+        return req.eventLoop.future(lyric)
     }
 }
 

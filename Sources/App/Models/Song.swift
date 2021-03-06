@@ -28,8 +28,8 @@ final class Song: Model, PublicTransformable {
     @Field(key: "duration")
     var duration: Int
     
-    @Field(key: "lyric_url")
-    var lyricUrl: String?
+    @Field(key: "lyric_name")
+    var lyric_name: String?
     
     @Siblings(through: PlaylistSongRelation.self, from: \.$song, to: \.$playlist)
     var playlists: [Playlist]
@@ -41,12 +41,12 @@ final class Song: Model, PublicTransformable {
     
     static let id3TagEditor = ID3TagEditor()
     
-    init(id: UUID? = nil, authorId: User.IDValue, filename: String, name: String, duration: Int, lyricUrl: String? = nil) {
+    init(id: UUID? = nil, authorId: User.IDValue, filename: String, name: String, duration: Int, lyricName: String? = nil) {
         self.id = id
         self.$artist.id = authorId
         self.filename = filename
         self.name = name
-        self.lyricUrl = lyricUrl
+        self.lyric_name = lyricName
         self.duration = duration
     }
     
@@ -60,7 +60,7 @@ final class Song: Model, PublicTransformable {
         var songUrl: String
         var name: String
         var duration: Int
-        var lyricUrl: String?
+        var lyricName: String?
         var imgUrl: String
         
         init(_ song: Song) {
@@ -71,7 +71,7 @@ final class Song: Model, PublicTransformable {
             self.songUrl = song.filename.songUrl
             self.name = song.name
             self.duration = song.duration
-            self.lyricUrl = song.lyricUrl
+            self.lyricName = song.lyric_name
             let index = song.filename.firstIndex(of: ".")
             if let index = index {
                 self.imgUrl = String(song.filename.prefix(upTo: index) + ".jpg").imgUrl
