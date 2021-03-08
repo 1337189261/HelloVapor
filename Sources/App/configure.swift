@@ -50,6 +50,8 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateSong())
     app.migrations.add(CreateToken())
     app.migrations.add(CreatePlaylist())
+    app.migrations.add(CreateComment())
+    app.migrations.add(CreateCommentReply())
     
     app.migrations.add(CreateFollowRelation())
     app.migrations.add(CreatePlaylistFollowRelation())
@@ -70,25 +72,23 @@ public func configure(_ app: Application) throws {
     try createMockData(db: app.db)
     try routes(app)
 }
-
+var chengdu: Song!
+let chengduId = UUID(uuidString: "43b82c23-2e83-474f-869d-adb373119fbb")!
 func createMockData(db: Database) throws {
     let user = User(username: "chy", hashedPassword: try Bcrypt.hash("chypassword"), email: "chy@chy.com", avatar: "avatar.jpg".imgUrl)
     try user.save(on: db).wait()
-    
-    
-    
-    
     let artists = try [("赵雷", "ZhaoLei.jpg"), ("毛不易", "MaoBuYi.jpg"), ("林俊杰", "JJLin.jpg")].map { (name, imgName) -> Artist in
         let artist = Artist(nickname: name,avatarUrl: imgName.imgUrl)
         try artist.save(on:db).wait()
         return artist
     }
     let songs = [
-        Song(authorId: artists[0].id!, filename: "chengdu", name: "成都", duration: 328, lyricName: "chengdu.lrc"),
+        Song(id:chengduId ,authorId: artists[0].id!, filename: "chengdu", name: "成都", duration: 328, lyricName: "chengdu.lrc"),
         Song(authorId: artists[1].id!, filename: "xiangwozheyangderen", name: "像我这样的人", duration: 208),
         Song(authorId: artists[2].id!, filename: "guanjianci", name: "关键词", duration: 212)
     ]
     try songs.forEach {try $0.save(on: db).wait()}
+    chengdu = songs[0]
     let playlist = Playlist(creatorId: user.id!, name: "别急，我们会在无数个晚风中相遇", avatarUrl: "fm1.jpg".imgUrl)
     try playlist.save(on: db).wait()
     try songs.forEach {
@@ -109,4 +109,5 @@ func createMockData(db: Database) throws {
         try playlist2.$songs.attach($0, on: db).wait()
     }
     
+    mockComment(on: db)
 }

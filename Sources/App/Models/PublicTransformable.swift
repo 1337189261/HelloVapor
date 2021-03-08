@@ -9,7 +9,7 @@ import Vapor
 import Fluent
 
 protocol PublicTransformable {
-    associatedtype PublicType
+    associatedtype PublicType: Content
     func convertToPublic() -> PublicType
 }
 

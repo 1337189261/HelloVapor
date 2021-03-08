@@ -8,7 +8,7 @@
 import Vapor
 import Fluent
 
-final class CommentReply: Model, Content {
+final class CommentReply: Model, PublicTransformable {
     
     static var schema: String = "comment_replies"
     
@@ -16,7 +16,7 @@ final class CommentReply: Model, Content {
     var id: UUID?
     
     @Parent(key: "comment_id")
-    var comment: Comment
+    var parentComment: Comment
     
     @Field(key: "content")
     var content: String
@@ -24,26 +24,8 @@ final class CommentReply: Model, Content {
     @Parent(key: "user_id")
     var user: User
     
-    @Field(key: "username")
-    var userName: String
-    
-    @Field(key: "avatar_url")
-    var avatarURL: String
-    
-    @Field(key: "user_schema")
-    var userSchema: String
-    
     @Field(key: "like_count")
     var likeCount: Int
-    
-    @OptionalParent(key: "reply_user_id")
-    var replyUser: User?
-    
-    @Field(key: "reply_user_name")
-    var replyUserName: String?
-    
-    @Field(key: "reply_user_schema")
-    var replyUserSchema: String
     
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
@@ -54,4 +36,24 @@ final class CommentReply: Model, Content {
     // enable soft delete
     @Timestamp(key: "deleted_at", on: .delete)
     var deletedAt: Date?
+    
+    struct Public: Content {
+        var id: UUID?
+        var parentCommentId: UUID
+        var content: String
+        var user: User.Public
+        var likeCount: Int
+        
+        init(_ commentReply: CommentReply) {
+            self.id = commentReply.id
+            self.parentCommentId = commentReply.$parentComment.id
+            self.content = commentReply.content
+            self.user = commentReply.user.convertToPublic()
+            self.likeCount = commentReply.likeCount
+        }
+    }
+    
+    func convertToPublic() -> Public {
+        Public(self)
+    }
 }

@@ -7,7 +7,6 @@
 
 import Fluent
 import Vapor
-import ID3TagEditor
 
 final class Song: Model, PublicTransformable {
     
@@ -34,12 +33,13 @@ final class Song: Model, PublicTransformable {
     @Siblings(through: PlaylistSongRelation.self, from: \.$song, to: \.$playlist)
     var playlists: [Playlist]
     
+    @Children(for: \.$song)
+    var comments: [Comment]
+    
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
     
     init() { }
-    
-    static let id3TagEditor = ID3TagEditor()
     
     init(id: UUID? = nil, authorId: User.IDValue, filename: String, name: String, duration: Int, lyricName: String? = nil) {
         self.id = id

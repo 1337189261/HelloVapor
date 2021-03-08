@@ -8,14 +8,14 @@
 import Vapor
 import Fluent
 
-final class Comment: Model, Content {
+final class Comment: Model, PublicTransformable {
     static var schema: String = "comments"
     
     @ID
     var id: UUID?
     
     @Parent(key: "song_id")
-    var songId: Song
+    var song: Song
     
     @Field(key: "content")
     var content: String
@@ -23,22 +23,13 @@ final class Comment: Model, Content {
     @Parent(key: "user_id")
     var user: User
     
-    @Field(key: "username")
-    var userName: String
-    
-    @Field(key: "avatar_url")
-    var avatarURL: String
-    
-    @Field(key: "user_schema")
-    var userSchema: String
-    
     @Field(key: "reply_count")
     var replyCount: Int
     
     @Field(key: "like_count")
     var likeCount: Int
     
-    @Children(for: \.$comment)
+    @Children(for: \.$parentComment)
     var replies: [CommentReply]
     
     @Timestamp(key: "created_at", on: .create)
@@ -50,6 +41,28 @@ final class Comment: Model, Content {
     // enable soft delete
     @Timestamp(key: "deleted_at", on: .delete)
     var deletedAt: Date?
+    
+    struct Public: Content {
+        var id: UUID?
+        var content: String
+        var user: User.Public
+        var replyCount: Int
+        var likeCount: Int
+        var replies: [CommentReply.Public]
+        
+        init(_ comment: Comment) {
+            self.id = comment.id
+            self.content = comment.content
+            self.user = comment.user.convertToPublic()
+            self.replyCount = comment.replyCount
+            self.likeCount = comment.likeCount
+            self.replies = comment.replies.convertToPublic()
+        }
+    }
+    
+    func convertToPublic() -> Public {
+        Public(self)
+    }
     
 }
 

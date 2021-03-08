@@ -64,12 +64,6 @@ final class User: Model, PublicTransformable {
         var followCount: Int?
         var followerCount: Int?
         
-        init(id: UUID?, username: String, avatar: String) {
-            self.id = id
-            self.username = username
-            self.avatarUrl = avatar
-        }
-        
         init(_ user: User) {
             self.id = user.id
             self.avatarUrl = user.profile.avatarUrl
