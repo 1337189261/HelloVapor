@@ -18,7 +18,9 @@ struct CommentController: RouteCollection {
         Song.find(req.parameters.get("songid"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { song in
-                song.$comments.query(on: req.db).with(\.$user).with(\.$replies).all().convertToPublic()
+                song.$comments.query(on: req.db).with(\.$user).with(\.$replies) {
+                    $0.with(\.$user)
+                }.all().convertToPublic()
             }
     }
 }

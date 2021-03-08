@@ -21,6 +21,7 @@ import Vapor
 // configures your application
 
 var workingDirectory: String = ""
+let recreateDatabase = false
 public func configure(_ app: Application) throws {
     
     let databaseName: String
@@ -59,7 +60,9 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateUserArtistFollowRelation())
     
     app.databases.middleware.use(UserMiddleware())
-    try app.autoRevert().wait()
+    if recreateDatabase {
+        try app.autoRevert().wait()
+    }
     try app.autoMigrate().wait()
     app.views.use(.leaf)
     workingDirectory = app.directory.workingDirectory
@@ -69,7 +72,9 @@ public func configure(_ app: Application) throws {
         workingDirectory = app.directory.workingDirectory
     }
     app.logger.info(.init(stringLiteral: workingDirectory))
-    try createMockData(db: app.db)
+    if recreateDatabase {
+        try createMockData(db: app.db)
+    }
     try routes(app)
 }
 var chengdu: Song!

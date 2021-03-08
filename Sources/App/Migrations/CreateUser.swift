@@ -21,7 +21,8 @@ struct CreateUser: Migration {
         .field("profile_follow_count", .int, .sql(.default(0)))
         .field("profile_follower_count", .int, .sql(.default(0)))
         .field("created_at", .date)
-        .unique(on: "username", "email")
+        .field("netease_id", .int)
+        .unique(on: "email")
         .create()
     }
     

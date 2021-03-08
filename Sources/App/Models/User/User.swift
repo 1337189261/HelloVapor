@@ -40,9 +40,12 @@ final class User: Model, PublicTransformable {
     @Siblings(through: PlaylistFollowRelation.self, from: \.$user, to: \.$playlist)
     var followedPlaylist: [Playlist]
     
+    @OptionalField(key: "netease_id")
+    var neteaseID: Int?
+    
     init() { }
     
-    init(id: UUID? = nil, username: String, hashedPassword: String, email: String, avatar: String? = nil) {
+    init(id: UUID? = nil, username: String, hashedPassword: String, email: String, avatar: String? = nil, neteaseID: Int? = nil) {
         self.username = username
         self.hashedPassword = hashedPassword
         self.email = email
@@ -52,6 +55,7 @@ final class User: Model, PublicTransformable {
         profile.schema = ""
         profile.nickname = username
         self.profile = profile
+        self.neteaseID = neteaseID
     }
     
     final class Public: Content {
