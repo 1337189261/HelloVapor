@@ -21,7 +21,9 @@ import Vapor
 // configures your application
 
 var workingDirectory: String = ""
-let recreateDatabase = false
+var recreateDatabase: Bool {
+    isLinux ? true : false
+}
 public func configure(_ app: Application) throws {
     
     let databaseName: String
@@ -82,6 +84,8 @@ let chengduId = UUID(uuidString: "43b82c23-2e83-474f-869d-adb373119fbb")!
 func createMockData(db: Database) throws {
     let user = User(username: "chy", hashedPassword: try Bcrypt.hash("chypassword"), email: "chy@chy.com", avatar: "avatar.jpg".imgUrl)
     try user.save(on: db).wait()
+    let token = Token(value: "VcTB88YiiLK4Khnrbdfl/g==", userID: user.id!)
+    try token.save(on: db).wait()
     let artists = try [("赵雷", "ZhaoLei.jpg"), ("毛不易", "MaoBuYi.jpg"), ("林俊杰", "JJLin.jpg")].map { (name, imgName) -> Artist in
         let artist = Artist(nickname: name,avatarUrl: imgName.imgUrl)
         try artist.save(on:db).wait()

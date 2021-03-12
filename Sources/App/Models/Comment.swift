@@ -23,16 +23,13 @@ final class Comment: Model, PublicTransformable {
     @Parent(key: "user_id")
     var user: User
     
-    @Field(key: "reply_count")
-    var replyCount: Int
-    
     @Field(key: "like_count")
     var likeCount: Int
     
     @Children(for: \.$parentComment)
     var replies: [CommentReply]
     
-    @Timestamp(key: "created_at", on: .create)
+    @Timestamp(key: "created_at", on: .none)
     var createdAt: Date?
     
     @Timestamp(key: "updated_at", on: .update)
@@ -42,21 +39,25 @@ final class Comment: Model, PublicTransformable {
     @Timestamp(key: "deleted_at", on: .delete)
     var deletedAt: Date?
     
+    init() {
+        self.createdAt = Date()
+    }
+    
     struct Public: Content {
         var id: UUID?
         var content: String
         var user: User.Public
-        var replyCount: Int
         var likeCount: Int
         var replies: [CommentReply.Public]
+        var time: Int
         
         init(_ comment: Comment) {
             self.id = comment.id
             self.content = comment.content
             self.user = comment.user.convertToPublic()
-            self.replyCount = comment.replyCount
             self.likeCount = comment.likeCount
             self.replies = comment.replies.convertToPublic()
+            self.time = Int(comment.createdAt!.timeIntervalSince1970 * 1000)
         }
     }
     

@@ -27,7 +27,7 @@ final class CommentReply: Model, PublicTransformable {
     @Field(key: "like_count")
     var likeCount: Int
     
-    @Timestamp(key: "created_at", on: .create)
+    @Timestamp(key: "created_at", on: .none)
     var createdAt: Date?
     
     @Timestamp(key: "updated_at", on: .update)
@@ -37,12 +37,17 @@ final class CommentReply: Model, PublicTransformable {
     @Timestamp(key: "deleted_at", on: .delete)
     var deletedAt: Date?
     
+    init() {
+        createdAt = Date()
+    }
+    
     struct Public: Content {
         var id: UUID?
         var parentCommentId: UUID
         var content: String
         var user: User.Public
         var likeCount: Int
+        var time: Int
         
         init(_ commentReply: CommentReply) {
             self.id = commentReply.id
@@ -50,7 +55,9 @@ final class CommentReply: Model, PublicTransformable {
             self.content = commentReply.content
             self.user = commentReply.user.convertToPublic()
             self.likeCount = commentReply.likeCount
+            self.time = Int(commentReply.createdAt!.timeIntervalSince1970 * 1000)
         }
+        
     }
     
     func convertToPublic() -> Public {

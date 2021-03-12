@@ -14,7 +14,6 @@ struct CreateComment: Migration {
             .field("song_id", .uuid, .required)
             .field("content", .string, .required)
             .field("user_id", .uuid, .required)
-            .field("reply_count",.int, .sql(.default(0)))
             .field("like_count", .int, .sql(.default(0)))
             .field("created_at", .date)
             .field("updated_at", .date)

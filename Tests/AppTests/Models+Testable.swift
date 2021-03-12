@@ -31,11 +31,11 @@ extension User {
     }
     
     static func createOne() throws -> User {
-        try create(name: "xsj", username: "xsj", password: "xsjpassword", email: "xsj@xsj.com", on: app.db)
+        try create(name: "xsjtest", username: "xsj", password: "xsjpassword", email: "xsj@xsj.com", on: app.db)
     }
     
     static func createAnother() throws -> User {
-        try create(name: "chy", username: "chy", password: "chypassword", email: "chy@chy.com", on: app.db)
+        try create(name: "chytest", username: "chy", password: "chypassword", email: "chy@chy.com", on: app.db)
     }
     
     func login(completion: (Token) throws -> Void) throws {

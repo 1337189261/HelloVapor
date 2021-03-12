@@ -9,7 +9,7 @@ import Vapor
 import Fluent
 
 func mockComment(on db: Database) {
-    let path = "/Users/chy/Documents/Vapor/HelloVapor/Sources/App/Mock/CommentJson.json"
+    let path = workingDirectory +  "Sources/App/Mock/CommentJson.json"
     let data = try! Data(contentsOf: URL(fileURLWithPath: path))
     let commentResponse = try! JSONDecoder().decode(NeteaseCommentResponse.self, from: data)
     let allComments = Set(commentResponse.hotComments + commentResponse.comments)
@@ -21,19 +21,18 @@ func mockComment(on db: Database) {
     for neteaseComment in allComments where neteaseComment.beReplied.isEmpty {
         let comment = Comment()
         comment.$song.id = chengdu.id!
+        comment.createdAt = Date(timeIntervalSince1970: Double(neteaseComment.time) / 1000)
         comment.content = neteaseComment.content
         let user = try! User.query(on: db).filter(\.$neteaseID == neteaseComment.user.userId).first().wait()
         comment.$user.id = user!.id!
         try! comment.save(on: db).wait()
     }
-    print(commentResponse.hotComments.filter {!$0.beReplied.isEmpty}.count)
     for neteaseComment in allComments where !neteaseComment.beReplied.isEmpty {
         let commentReply = CommentReply()
+        commentReply.createdAt = Date(timeIntervalSince1970: Double(neteaseComment.time) / 1000)
         guard let parentComment = try! Comment.query(on: db).filter(\.$content == neteaseComment.beReplied[0].content).first().wait() else {
-            print("cannot find parent")
             continue
         }
-        print("find parent")
         commentReply.content = neteaseComment.content
         commentReply.$parentComment.id = parentComment.id!
         let user = try! User.query(on: db).filter(\.$neteaseID == neteaseComment.user.userId).first().wait()
@@ -55,6 +54,7 @@ struct NeteaseComment: Codable, Equatable, Hashable {
     let user: NeteaseUser
     let content: String
     let commentId: Int
+    let time: Int
     let beReplied: [NeteaseCommentBeReplied]
     static func == (lhs: NeteaseComment, rhs: NeteaseComment) -> Bool {
         lhs.commentId == rhs.commentId
