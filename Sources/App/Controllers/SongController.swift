@@ -54,13 +54,12 @@ struct SongController: RouteCollection {
     }
     
     func searchHandler(_ req: Request) throws -> EventLoopFuture<[Song.Public]> {
-            guard let searchTerm = req.query[String.self, at: "term"] else {
-                throw Abort(.badRequest)
-            }
-            
-            return Song.query(on: req.db).filter(\.$name == searchTerm)
-                .all()
-                .convertToPublic()
+        guard let searchTerm = req.query[String.self, at: "term"] else {
+            throw Abort(.badRequest)
+        }
+        return Song.query(on: req.db).filter(\.$name == searchTerm)
+            .all()
+            .convertToPublic()
     }
     
 }

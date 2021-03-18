@@ -46,6 +46,7 @@ final class User: Model, PublicTransformable {
     init() { }
     
     init(id: UUID? = nil, username: String, hashedPassword: String, email: String, avatar: String? = nil, neteaseID: Int? = nil) {
+        self.id = id
         self.username = username
         self.hashedPassword = hashedPassword
         self.email = email
@@ -76,6 +77,7 @@ final class User: Model, PublicTransformable {
             self.nickname = user.profile.nickname
             self.followCount = user.profile.followCount
             self.followerCount = user.profile.followerCount
+            self.username = user.username
         }
     }
 }

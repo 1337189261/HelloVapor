@@ -15,17 +15,14 @@ struct FileController: RouteCollection {
         routes.get("api", "lyric", ":lyricName", use: getLyricHandler(_:))
     }
     
-    func getImageHandler(_ req: Request) throws -> Response {
+    func getImageHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         guard let imageName = req.parameters.get("imageName") else {
             return Response(status: .notFound);
         }
         let filePath = workingDirectory + "Resources/Images/" + imageName
         req.logger.info(Logger.Message(stringLiteral: filePath))
-        let fileURL = URL(fileURLWithPath: filePath)
-        let data = try Data(contentsOf: fileURL)
-        var headers = HTTPHeaders()
-        headers.add(name: .contentType, value: "image/jpeg")
-        return Response(headers: headers, body: .init(data: data))
+        let response = req.fileio.streamFile(at: filePath)
+        return req.eventLoop.makeSucceededFuture(response)
     }
     
     func getSongHandler(_ req: Request) throws -> EventLoopFuture<Response> {

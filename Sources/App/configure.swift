@@ -63,6 +63,7 @@ public func configure(_ app: Application) throws {
     
     app.databases.middleware.use(UserMiddleware())
     if recreateDatabase {
+        print("recreate Database")
         try app.autoRevert().wait()
     }
     try app.autoMigrate().wait()
@@ -81,8 +82,9 @@ public func configure(_ app: Application) throws {
 }
 var chengdu: Song!
 let chengduId = UUID(uuidString: "43b82c23-2e83-474f-869d-adb373119fbb")!
+let haoyuId = UUID(uuidString: "a8fde558-7cee-44dc-849b-a88ae686279e")!
 func createMockData(db: Database) throws {
-    let user = User(username: "chy", hashedPassword: try Bcrypt.hash("chypassword"), email: "chy@chy.com", avatar: "avatar.jpg".imgUrl)
+    let user = User(id: haoyuId, username: "chy", hashedPassword: try Bcrypt.hash("chypassword"), email: "chy@chy.com", avatar: "avatar.jpg".imgUrl)
     try user.save(on: db).wait()
     let token = Token(value: "VcTB88YiiLK4Khnrbdfl/g==", userID: user.id!)
     try token.save(on: db).wait()
