@@ -35,7 +35,9 @@ public func configure(_ app: Application) throws {
         databaseName = "vapor_database"
         databasePort = 5432
     }
-    
+//    print(FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL)
+//    print(("~" as NSString).expandingTildeInPath)
+//    print(NSHomeDirectory())
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     app.middleware.use(app.sessions.middleware)
     
@@ -70,7 +72,7 @@ public func configure(_ app: Application) throws {
     app.views.use(.leaf)
     workingDirectory = app.directory.workingDirectory
     if isLinux {
-        workingDirectory = "~/HelloVapor/"
+        workingDirectory = NSHomeDirectory() + "/HelloVapor/"
     } else {
         workingDirectory = app.directory.workingDirectory
     }
