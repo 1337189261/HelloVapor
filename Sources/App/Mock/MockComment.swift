@@ -10,7 +10,7 @@ import Fluent
 
 func mockComment(on db: Database) {
     let path = workingDirectory +  "Sources/App/Mock/CommentJson.json"
-    db.logger.info(path)
+    db.logger.info(Logger.Message(stringLiteral: path))
     let data = try! Data(contentsOf: URL(fileURLWithPath: path))
     let commentResponse = try! JSONDecoder().decode(NeteaseCommentResponse.self, from: data)
     let allComments = Set(commentResponse.hotComments + commentResponse.comments)
