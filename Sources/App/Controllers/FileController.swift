@@ -16,9 +16,7 @@ struct FileController: RouteCollection {
     }
     
     func getImageHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        guard let imageName = req.parameters.get("imageName") else {
-            return Response(status: .notFound);
-        }
+        let imageName = req.parameters.get("imageName") ?? ""
         let filePath = workingDirectory + "Resources/Images/" + imageName
         req.logger.info(Logger.Message(stringLiteral: filePath))
         let response = req.fileio.streamFile(at: filePath)
