@@ -70,7 +70,7 @@ public func configure(_ app: Application) throws {
     app.views.use(.leaf)
     workingDirectory = app.directory.workingDirectory
     if isLinux {
-        workingDirectory = "/home/ubuntu/HelloVapor/"
+        workingDirectory = "~/HelloVapor/"
     } else {
         workingDirectory = app.directory.workingDirectory
     }
