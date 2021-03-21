@@ -18,6 +18,7 @@ struct CreateComment: Migration {
             .field("created_at", .date)
             .field("updated_at", .date)
             .field("deleted_at", .date)
+            .field("netease_comment_id", .int)
             .create()
     }
     

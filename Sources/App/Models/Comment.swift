@@ -39,6 +39,9 @@ final class Comment: Model, PublicTransformable {
     @Timestamp(key: "deleted_at", on: .delete)
     var deletedAt: Date?
     
+    @Field(key: "netease_comment_id")
+    var neteaseCommentId: Int
+    
     init() {
         self.createdAt = Date()
     }

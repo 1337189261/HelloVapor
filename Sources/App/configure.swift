@@ -22,7 +22,7 @@ import Vapor
 
 var workingDirectory: String = ""
 var recreateDatabase: Bool {
-    isLinux ? true : false
+    isLinux ? true : true
 }
 public func configure(_ app: Application) throws {
     
@@ -70,9 +70,8 @@ public func configure(_ app: Application) throws {
     }
     try app.autoMigrate().wait()
     app.views.use(.leaf)
-    workingDirectory = app.directory.workingDirectory
     if isLinux {
-        workingDirectory = NSHomeDirectory() + "/HelloVapor/"
+        workingDirectory = "/home/jiahao/HelloVapor/"
     } else {
         workingDirectory = app.directory.workingDirectory
     }
