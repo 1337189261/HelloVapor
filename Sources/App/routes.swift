@@ -8,4 +8,5 @@ func routes(_ app: Application) throws {
     try app.register(collection: PlaylistController())
     try app.register(collection: HomeController())
     try app.register(collection: CommentController())
+    try app.register(collection: MomentController())
 }

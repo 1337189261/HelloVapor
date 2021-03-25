@@ -8,7 +8,9 @@
 import Vapor
 import Fluent
 
-final class Comment: Model, PublicTransformable {
+final class Comment: PublicTransformable {
+    typealias PublicType = Public
+    
     static var schema: String = "comments"
     
     @ID
@@ -46,7 +48,7 @@ final class Comment: Model, PublicTransformable {
         self.createdAt = Date()
     }
     
-    struct Public: Content {
+    struct Public: PublicTypeProtocol {
         var id: UUID?
         var content: String
         var user: User.Public
@@ -54,7 +56,8 @@ final class Comment: Model, PublicTransformable {
         var replies: [CommentReply.Public]
         var time: Int
         
-        init(_ comment: Comment) {
+        init(_ privateValue: Comment) {
+            let comment = privateValue
             self.id = comment.id
             self.content = comment.content
             self.user = comment.user.convertToPublic()
@@ -62,10 +65,6 @@ final class Comment: Model, PublicTransformable {
             self.replies = comment.replies.convertToPublic()
             self.time = Int(comment.createdAt!.timeIntervalSince1970 * 1000)
         }
-    }
-    
-    func convertToPublic() -> Public {
-        Public(self)
     }
     
 }

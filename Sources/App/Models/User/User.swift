@@ -8,7 +8,9 @@
 import Fluent
 import Vapor
 
-final class User: Model, PublicTransformable {
+final class User: PublicTransformable {
+    typealias PublicType = Public
+    
     
     static let schema = "users"
     
@@ -59,7 +61,7 @@ final class User: Model, PublicTransformable {
         self.neteaseID = neteaseID
     }
     
-    final class Public: Content {
+    final class Public: PublicTypeProtocol  {
         var id: UUID?
         var username: String?
         var avatarUrl: String?
@@ -69,7 +71,8 @@ final class User: Model, PublicTransformable {
         var followCount: Int?
         var followerCount: Int?
         
-        init(_ user: User) {
+        init(_ privateValue: User) {
+            let user = privateValue
             self.id = user.id
             self.avatarUrl = user.profile.avatarUrl
             self.backgroundAvatarUrl = user.profile.backgroundAvatarUrl
@@ -79,12 +82,6 @@ final class User: Model, PublicTransformable {
             self.followerCount = user.profile.followerCount
             self.username = user.username
         }
-    }
-}
-
-extension User {
-    func convertToPublic() -> User.Public {
-        Public(self)
     }
 }
 

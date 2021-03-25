@@ -16,7 +16,7 @@ var isLinux: Bool {
 }
 
 let baseUrl: String = {
-    isLinux ? "http://193.123.246.233:80/" : "http://localhost:8080/"
+    isLinux ? "http://13.88.217.75:80/" : "http://localhost:8080/"
 }()
 
 extension String {
@@ -27,4 +27,11 @@ extension String {
     var imgUrl: String {
         baseUrl + "api/images/" + self
     }
+}
+
+import Fluent
+import Vapor
+
+protocol QueryableModel: Model {
+    static func query(with req: Request) -> QueryBuilder<Self>
 }

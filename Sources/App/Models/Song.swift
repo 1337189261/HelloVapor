@@ -8,7 +8,7 @@
 import Fluent
 import Vapor
 
-final class Song: Model, PublicTransformable {
+final class Song: PublicTransformable {
     
     static let schema = "songs"
     
@@ -50,11 +50,11 @@ final class Song: Model, PublicTransformable {
         self.duration = duration
     }
     
-    static func query(with req: Request)-> QueryBuilder<Song> {
+    static func query(with req: Request) -> QueryBuilder<Song> {
         Song.query(on: req.db).with(\.$artist)
     }
     
-    struct Public: Content {
+    struct Public: PublicTypeProtocol {
         var id: UUID?
         var artist: Artist?
         var songUrl: String
@@ -63,7 +63,8 @@ final class Song: Model, PublicTransformable {
         var lyricName: String?
         var imgUrl: String
         
-        init(_ song: Song) {
+        init(_ privateValue: Song) {
+            let song = privateValue
             self.id = song.id
             if let artist = song.$artist.value {
                 self.artist = artist

@@ -8,7 +8,7 @@
 import Vapor
 import Fluent
 
-final class Playlist: Model, PublicTransformable {
+final class Playlist: PublicTransformable {
     static let schema: String = "playlists"
     
     @ID
@@ -59,7 +59,7 @@ final class Playlist: Model, PublicTransformable {
         .with(\.$creator)
     }
     
-    struct Public: Content {
+    struct Public: PublicTypeProtocol {
         var id: UUID?
         var name: String?
         var avatarUrl: String?
@@ -67,7 +67,8 @@ final class Playlist: Model, PublicTransformable {
         var followerCount: Int?
         var creator: User.Public?
         
-        init(_ playlist: Playlist) {
+        init(_ privateValue: Playlist) {
+            let playlist = privateValue
             self.id = playlist.id
             self.name = playlist.name
             self.avatarUrl = playlist.avatarUrl

@@ -62,6 +62,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreatePlaylistFollowRelation())
     app.migrations.add(CreatePlaylistSongRelation())
     app.migrations.add(CreateUserArtistFollowRelation())
+    app.migrations.add(CreateMoment())
     
     app.databases.middleware.use(UserMiddleware())
     if recreateDatabase {
@@ -82,11 +83,13 @@ public func configure(_ app: Application) throws {
     try routes(app)
 }
 var chengdu: Song!
+var haoyu: User!
 let chengduId = UUID(uuidString: "43b82c23-2e83-474f-869d-adb373119fbb")!
 let haoyuId = UUID(uuidString: "a8fde558-7cee-44dc-849b-a88ae686279e")!
 func createMockData(db: Database) throws {
     let user = User(id: haoyuId, username: "chy", hashedPassword: try Bcrypt.hash("chypassword"), email: "chy@chy.com", avatar: "avatar.jpg".imgUrl)
     try user.save(on: db).wait()
+    haoyu = user
     let token = Token(value: "VcTB88YiiLK4Khnrbdfl/g==", userID: user.id!)
     try token.save(on: db).wait()
     let artists = try [("赵雷", "ZhaoLei.jpg"), ("毛不易", "MaoBuYi.jpg"), ("林俊杰", "JJLin.jpg")].map { (name, imgName) -> Artist in
@@ -122,4 +125,5 @@ func createMockData(db: Database) throws {
     }
     
     mockComment(on: db)
+    mockMoment(on: db)
 }

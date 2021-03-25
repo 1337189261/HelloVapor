@@ -8,7 +8,8 @@
 import Vapor
 import Fluent
 
-final class CommentReply: Model, PublicTransformable {
+final class CommentReply: PublicTransformable {
+    typealias PublicType = Public
     
     static var schema: String = "comment_replies"
     
@@ -41,7 +42,7 @@ final class CommentReply: Model, PublicTransformable {
         createdAt = Date()
     }
     
-    struct Public: Content {
+    struct Public: PublicTypeProtocol {
         var id: UUID?
         var parentCommentId: UUID
         var content: String
@@ -49,7 +50,8 @@ final class CommentReply: Model, PublicTransformable {
         var likeCount: Int
         var time: Int
         
-        init(_ commentReply: CommentReply) {
+        init(_ privateValue: CommentReply) {
+            let commentReply = privateValue
             self.id = commentReply.id
             self.parentCommentId = commentReply.$parentComment.id
             self.content = commentReply.content
@@ -58,9 +60,5 @@ final class CommentReply: Model, PublicTransformable {
             self.time = Int(commentReply.createdAt!.timeIntervalSince1970 * 1000)
         }
         
-    }
-    
-    func convertToPublic() -> Public {
-        Public(self)
     }
 }

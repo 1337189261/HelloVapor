@@ -25,7 +25,6 @@ struct FileController: RouteCollection {
     
     func getSongHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let songName = req.parameters.get("songName") ?? ""
-        
         let filePath = workingDirectory + "Resources/Songs/" + songName
         req.logger.info(Logger.Message(stringLiteral: filePath))
         let response = req.fileio.streamFile(at: filePath)

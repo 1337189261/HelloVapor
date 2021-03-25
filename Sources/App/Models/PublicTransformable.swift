@@ -8,9 +8,20 @@
 import Vapor
 import Fluent
 
-protocol PublicTransformable {
-    associatedtype PublicType: Content
+protocol PublicTransformable: Model {
+    associatedtype PublicType: PublicTypeProtocol where PublicType.PrivateType == Self
     func convertToPublic() -> PublicType
+}
+
+extension PublicTransformable {
+    func convertToPublic() -> PublicType {
+        PublicType(self)
+    }
+}
+
+protocol PublicTypeProtocol: Content {
+    associatedtype PrivateType
+    init(_ privateValue:PrivateType)
 }
 
 extension EventLoopFuture where Value: PublicTransformable {
