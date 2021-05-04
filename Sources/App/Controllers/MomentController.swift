@@ -12,7 +12,10 @@ struct MomentController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let momentsRoute = routes.grouped("api", "moments")
         momentsRoute.get("all", use: getAllMoments(_:))
-        momentsRoute.post("create", use: createHandler(_:))
+        let tokenAuthMiddleware = Token.authenticator()
+        let guardAuthMiddleware = User.guardMiddleware()
+        let tokenAuthGroup = momentsRoute.grouped(tokenAuthMiddleware, guardAuthMiddleware)
+        tokenAuthGroup.on(.POST, "create", body: .collect(maxSize: "5mb"), use: createHandler(_:))
     }
     
     func getAllMoments(_ req: Request) throws -> EventLoopFuture<[Moment.Public]> {
@@ -36,6 +39,7 @@ struct MomentController: RouteCollection {
 
 struct CreateMomentData: Codable {
     let content: String
+    let image0: Data?
     let image1: Data?
     let image2: Data?
     let image3: Data?
@@ -44,9 +48,9 @@ struct CreateMomentData: Codable {
     let image6: Data?
     let image7: Data?
     let image8: Data?
-    let image9: Data?
+    
     let location: String?
     var images: [Data] {
-        [image1, image2, image3, image4, image5, image6,image7, image8, image9].compactMap {$0}
+        [image0, image1, image2, image3, image4, image5, image6,image7, image8].compactMap {$0}
     }
 }

@@ -11,7 +11,6 @@ import Vapor
 final class User: PublicTransformable {
     typealias PublicType = Public
     
-    
     static let schema = "users"
     
     @ID

@@ -69,7 +69,7 @@ final class Moment: PublicTransformable, QueryableModel {
         let commentCount: Int?
         let images: [String]?
         let location: String?
-        let createAt: Double?
+        let createAt: Int?
         
         init(_ privateValue: Moment) {
             let moment = privateValue
@@ -81,7 +81,7 @@ final class Moment: PublicTransformable, QueryableModel {
             self.commentCount = moment.commentCount
             self.images = moment.images
             self.location = moment.location
-            self.createAt = privateValue.createdAt?.timeIntervalSince1970
+            self.createAt = Int(moment.createdAt!.timeIntervalSince1970 * 1000)
         }
         
     }

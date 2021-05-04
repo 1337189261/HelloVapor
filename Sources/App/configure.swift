@@ -22,7 +22,7 @@ import Vapor
 
 var workingDirectory: String = ""
 var recreateDatabase: Bool {
-    isLinux ? true : true
+    true
 }
 public func configure(_ app: Application) throws {
     

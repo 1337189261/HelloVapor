@@ -68,5 +68,3 @@ final class Comment: PublicTransformable {
     }
     
 }
-
-
